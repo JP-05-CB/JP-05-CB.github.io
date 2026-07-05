@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jayaprasath SV // CYBER_OS v2.5</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Bebas+Neue&family=Oxanium:wght@200..800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #080b0f;
+    --bg2:       #0d1117;
+    --bg3:       #111820;
+    --green:     #00ff41;
+    --green-dim: #00c832;
+    --cyan:      #00e5ff;
+    --cyan-dim:  #0099b3;
+    --amber:     #ffb300;
+    --amber-dim: #cc8e00;
+    --red:       #ff3c3c;
+    --dim:       #3a4a5a;
+    --text:      #b0c4d8;
+    --text-dim:  #607080;
+    --border:    rgba(0,229,255,0.15);
+    --scan:      rgba(0,255,65,0.03);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINE overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan) 2px,
+      var(--scan) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── BIOS BOOT SCREEN ── */
+  #bios {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 60px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #c0c0c0;
+    overflow: hidden;
+  }
+  #bios-lines { max-width: 780px; width: 100%; }
+  #bios-lines p { margin-bottom: 2px; opacity: 0; animation: bios-fade 0.1s forwards; }
+  #bios-bar {
+    margin-top: 28px;
+    width: 440px;
+    height: 18px;
+    border: 1px solid #555;
+    position: relative;
+    overflow: hidden;
+  }
+  #bios-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--green);
+    transition: width 0.04s linear;
+    box-shadow: 0 0 10px var(--green);
+  }
+  #bios-status { margin-top: 10px; color: var(--green); font-size: 11px; }
+
+  @keyframes bios-fade { to { opacity: 1; } }
+
+  /* ── NAVBAR ── */
+  #navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    background: rgba(8,11,15,0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .nav-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 12px var(--green);
+  }
+  .nav-brand span { color: var(--cyan); }
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover {
+    color: var(--green);
+    border-color: var(--green);
+    text-shadow: 0 0 8px var(--green);
+    background: rgba(0,255,65,0.05);
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+  }
+  #live-clock { color: var(--amber); font-size: 12px; font-weight: 600; letter-spacing: 1px; }
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; box-shadow: 0 0 4px var(--green); }
+    50%      { opacity:0.4; box-shadow: none; }
+  }
+
+  /* ── MAIN ── */
+  main { padding-top: 44px; }
+
+  /* ── SECTION DEFAULTS ── */
+  section { padding: 80px 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
+
+  .section-label {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before {
+    content: '//';
+    color: var(--amber);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 56px);
+    color: #fff;
+    letter-spacing: 4px;
+    line-height: 1;
+    margin-bottom: 48px;
+  }
+  .section-title .accent { color: var(--green); text-shadow: 0 0 20px var(--green); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* Grid background */
+  #hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+  }
+
+  /* Corner brackets decoration */
+  .hero-corner {
+    position: absolute;
+    width: 60px; height: 60px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0.4;
+  }
+  .hero-corner.tl { top: 80px; left: 28px; border-width: 2px 0 0 2px; }
+  .hero-corner.tr { top: 80px; right: 28px; border-width: 2px 2px 0 0; }
+  .hero-corner.bl { bottom: 40px; left: 28px; border-width: 0 0 2px 2px; }
+  .hero-corner.br { bottom: 40px; right: 28px; border-width: 0 2px 2px 0; }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 28px;
+    width: 100%;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--amber);
+    display: inline-block;
+    box-shadow: 0 0 6px var(--amber);
+  }
+
+  .hero-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 9vw, 110px);
+    letter-spacing: 8px;
+    color: #fff;
+    line-height: 0.9;
+    margin-bottom: 4px;
+    position: relative;
+    display: inline-block;
+  }
+  /* Glitch layers */
+  .hero-name::before,
+  .hero-name::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    pointer-events: none;
+  }
+  .hero-name::before {
+    color: var(--cyan);
+    clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    animation: glitch-a 4s infinite steps(1);
+    text-shadow: -3px 0 var(--cyan);
+  }
+  .hero-name::after {
+    color: var(--red);
+    clip-path: polygon(0 65%, 100% 65%, 100% 80%, 0 80%);
+    animation: glitch-b 4s infinite steps(1);
+    text-shadow: 3px 0 var(--red);
+    opacity: 0.6;
+  }
+  @keyframes glitch-a {
+    0%,90%   { transform: translate(0); opacity: 0; }
+    91%      { transform: translate(-4px, 1px); opacity: 1; }
+    92%      { transform: translate(4px, -1px); opacity: 1; }
+    93%,100% { transform: translate(0); opacity: 0; }
+  }
+  @keyframes glitch-b {
+    0%,88%   { transform: translate(0); opacity: 0; }
+    89%      { transform: translate(4px, 2px); opacity: 0.7; }
+    90%      { transform: translate(-4px, -1px); opacity: 0.7; }
+    91%,100% { transform: translate(0); opacity: 0; }
+  }
+
+  .hero-sub {
+    font-family: 'Oxanium', sans-serif;
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: var(--cyan);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    text-shadow: 0 0 16px var(--cyan-dim);
+  }
+
+  /* Terminal block */
+  .hero-terminal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    max-width: 640px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    box-shadow: 0 0 40px rgba(0,229,255,0.06), inset 0 0 30px rgba(0,0,0,0.4);
+  }
+  .terminal-topbar {
+    background: var(--bg3);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .t-dot.r { background: #ff5f57; } .t-dot.y { background: #ffbd2e; } .t-dot.g { background: #28ca41; }
+  .terminal-title { font-size: 10px; color: var(--text-dim); margin-left: 8px; letter-spacing: 2px; }
+  .terminal-body { padding: 18px 20px; min-height: 110px; }
+  .t-prompt { color: var(--green); display: flex; gap: 8px; margin-bottom: 4px; }
+  .t-prompt .path { color: var(--cyan); }
+  .t-prompt .char { color: var(--amber); }
+  #typing-output { color: var(--text); display: block; margin-top: 4px; }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--green);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Hero CTA links */
+  .hero-links { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: currentColor;
+    opacity: 0.06;
+    transition: left 0.25s ease;
+  }
+  .btn:hover::before { left: 0; }
+  .btn-green { color: var(--green); border-color: var(--green); }
+  .btn-green:hover { text-shadow: 0 0 10px var(--green); box-shadow: 0 0 18px rgba(0,255,65,0.15); }
+  .btn-cyan  { color: var(--cyan); border-color: var(--cyan); }
+  .btn-cyan:hover { text-shadow: 0 0 10px var(--cyan); box-shadow: 0 0 18px rgba(0,229,255,0.15); }
+  .btn-amber { color: var(--amber); border-color: var(--amber); }
+  .btn-amber:hover { text-shadow: 0 0 10px var(--amber); box-shadow: 0 0 18px rgba(255,179,0,0.2); }
+
+  /* Floating hex addresses */
+  .hex-float {
+    position: absolute;
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    pointer-events: none;
+    z-index: 1;
+    animation: drift 12s linear infinite;
+  }
+  @keyframes drift {
+    0%   { opacity: 0; transform: translateY(0); }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-80px); }
+  }
+
+  /* ── SKILLS ── */
+  #skills { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .skill-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.25s;
+    cursor: default;
+  }
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent, var(--green));
+    box-shadow: 0 0 10px var(--accent, var(--green));
+  }
+  .skill-card:hover {
+    border-color: var(--accent, var(--green));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .skill-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .skill-icon {
+    font-size: 20px;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px var(--accent, var(--green)));
+  }
+  .skill-cat {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent, var(--green));
+  }
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .skill-tag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 3px 9px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    border-radius: 2px;
+  }
+
+  /* ── EXPERIENCE / TIMELINE ── */
+  #experience { position: relative; }
+
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--cyan), var(--green), var(--amber), transparent);
+    opacity: 0.4;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 44px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -32px;
+    top: 6px;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent, var(--cyan));
+    box-shadow: 0 0 10px var(--accent, var(--cyan));
+    border: 2px solid var(--bg);
+  }
+
+  .timeline-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .timeline-role {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+  .timeline-org { color: var(--accent, var(--cyan)); font-size: 13px; font-weight: 600; }
+  .timeline-date {
+    font-size: 10px;
+    color: var(--amber);
+    letter-spacing: 2px;
+    background: rgba(255,179,0,0.07);
+    border: 1px solid rgba(255,179,0,0.2);
+    padding: 2px 8px;
+    margin-left: auto;
+  }
+  .timeline-loc { font-size: 11px; color: var(--text-dim); margin-bottom: 10px; }
+  .timeline-desc {
+    color: var(--text-dim);
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+  .timeline-desc li {
+    list-style: none;
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .timeline-desc li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent, var(--cyan));
+    font-size: 10px;
+  }
+
+  /* ── PROJECTS ── */
+  #projects { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .project-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 26px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .project-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 60px; height: 60px;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    pointer-events: none;
+    opacity: 0.3;
+  }
+  .project-card:hover {
+    border-color: rgba(0,229,255,0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.05);
+  }
+  .project-type {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent, var(--cyan));
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .project-type::before { content: '['; color: var(--text-dim); }
+  .project-type::after  { content: ']'; color: var(--text-dim); }
+  .project-title {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .project-desc { font-size: 12px; color: var(--text-dim); line-height: 1.8; flex: 1; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .project-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+    background: rgba(0,255,65,0.06);
+    border: 1px solid rgba(0,255,65,0.15);
+    color: var(--green-dim);
+  }
+
+  /* ── CERTS ── */
+  #certs { }
+  .certs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .cert-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: all 0.2s;
+  }
+  .cert-card:hover { border-color: var(--amber); box-shadow: 0 0 16px rgba(255,179,0,0.06); }
+  .cert-icon { color: var(--amber); font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .cert-name { font-family: 'Oxanium', sans-serif; font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .cert-issuer { font-size: 11px; color: var(--text-dim); }
+  .cert-year { font-size: 10px; color: var(--amber); margin-top: 4px; letter-spacing: 1px; }
+
+  /* ── CONTACT TERMINAL ── */
+  #contact { border-top: 1px solid var(--border); }
+
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 700px) {
+    .contact-layout { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .hero-name { letter-spacing: 4px; }
+    .hero-sub { letter-spacing: 3px; }
+  }
+
+  .contact-info { display: flex; flex-direction: column; gap: 16px; }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .contact-item:hover { border-color: var(--cyan); background: rgba(0,229,255,0.03); }
+  .contact-item-label { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+  .contact-item-val { font-size: 13px; color: var(--cyan); font-weight: 600; }
+  .contact-icon { color: var(--cyan); font-size: 18px; flex-shrink: 0; }
+
+  /* Interactive terminal */
+  .contact-terminal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+  .ct-topbar {
+    background: var(--bg3);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ct-title { font-size: 10px; color: var(--text-dim); margin-left: 8px; letter-spacing: 2px; }
+  .ct-body { padding: 16px 18px; min-height: 220px; max-height: 320px; overflow-y: auto; }
+  .ct-body::-webkit-scrollbar { width: 4px; }
+  .ct-body::-webkit-scrollbar-thumb { background: var(--dim); }
+  .ct-line { margin-bottom: 4px; font-size: 12px; }
+  .ct-line.sys { color: var(--green); }
+  .ct-line.out { color: var(--text-dim); }
+  .ct-line.err { color: var(--red); }
+  .ct-line.info { color: var(--amber); }
+  .ct-input-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+    gap: 8px;
+  }
+  .ct-prompt-sym { color: var(--green); font-size: 13px; user-select: none; }
+  #ct-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    caret-color: var(--green);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .footer-brand { color: var(--green); letter-spacing: 2px; }
+  .footer-right { display: flex; gap: 16px; }
+  .footer-right a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .footer-right a:hover { color: var(--cyan); }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-name::before, .hero-name::after { animation: none; }
+    #bios { display: none; }
+  }
+
+  /* ── Fade-in for sections ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ── BIOS SCREEN ── -->
+<div id="bios">
+  <div id="bios-lines"></div>
+  <div id="bios-bar"><div id="bios-bar-fill"></div></div>
+  <div id="bios-status">Initializing CYBER_OS v2.5...</div>
+</div>
+
+<!-- ── NAVBAR ── -->
+<nav id="navbar" style="opacity:0;transition:opacity 0.5s;">
+  <div class="nav-brand">JSV<span>::</span>OS</div>
+  <div class="nav-links">
+    <a href="#hero">~/home</a>
+    <a href="#skills">~/skills</a>
+    <a href="#experience">~/xp</a>
+    <a href="#projects">~/projects</a>
+    <a href="#certs">~/certs</a>
+    <a href="#contact">~/contact</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      ONLINE
+    </div>
+    <span id="live-clock">00:00:00</span>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-corner tl"></div>
+    <div class="hero-corner tr"></div>
+    <div class="hero-corner bl"></div>
+    <div class="hero-corner br"></div>
+
+    <!-- Floating hex addresses -->
+    <div class="hex-float" style="top:18%;left:5%;animation-delay:0s;">0x4A61796170726173617468</div>
+    <div class="hex-float" style="top:40%;right:8%;animation-delay:3s;">0xRISCV_UART_PERIPH</div>
+    <div class="hex-float" style="top:70%;left:10%;animation-delay:6s;">0xZIGBEE_PROTO_STACK</div>
+    <div class="hex-float" style="top:25%;right:22%;animation-delay:9s;">0xCACHE_VERIFY_PASS</div>
+
+    <div class="hero-inner">
+      <div class="hero-eyebrow">CYBER_OS v2.5 // IDENTITY LOAD</div>
+      <h1 class="hero-name" data-text="JAYAPRASATH">JAYAPRASATH</h1>
+      <div class="hero-name" style="margin-left:2px;" data-text="SV">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,9vw,110px);letter-spacing:8px;color:var(--green);text-shadow:0 0 30px var(--green),0 0 60px rgba(0,255,65,0.3);display:inline-block;">SV</span>
+      </div>
+      <div class="hero-sub" style="margin-top:8px;">ECE Undergrad &nbsp;/&nbsp; Hardware Security &nbsp;/&nbsp; RISC-V Enthusiast</div>
+
+      <div class="hero-terminal">
+        <div class="terminal-topbar">
+          <div class="t-dot r"></div><div class="t-dot y"></div><div class="t-dot g"></div>
+          <span class="terminal-title">bash — jsv@cyber-os:~</span>
+        </div>
+        <div class="terminal-body">
+          <div class="t-prompt">
+            <span style="color:var(--green)">jsv@cyber-os</span><span class="path">:~/profile</span><span class="char">$</span>
+            <span style="color:var(--text-dim)">whoami --full</span>
+          </div>
+          <span id="typing-output"></span><span class="cursor" id="hero-cursor"></span>
+        </div>
+      </div>
+
+      <div class="hero-links">
+        <a href="#contact" class="btn btn-green">▶ CONNECT</a>
+        <a href="https://github.com/JP-05-CB" target="_blank" class="btn btn-cyan">◈ GITHUB</a>
+        <a href="https://www.linkedin.com/in/jaya-prasath-sv-12pg" target="_blank" class="btn btn-amber">⬡ LINKEDIN</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="container">
+      <div class="section-label fade-in">SYSTEM MODULES</div>
+      <h2 class="section-title fade-in">TECH <span class="accent">STACK</span></h2>
+      <div class="skills-grid">
+
+        <div class="skill-card fade-in" style="--accent:var(--green)">
+          <div class="skill-card-head">
+            <div class="skill-icon">⚙</div>
+            <div class="skill-cat">Simulation & EDA</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">MATLAB</span>
+            <span class="skill-tag">Simulink</span>
+            <span class="skill-tag">LTspice</span>
+            <span class="skill-tag">Ansys HFSS</span>
+            <span class="skill-tag">Cadence</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--cyan)">
+          <div class="skill-card-head">
+            <div class="skill-icon">⬡</div>
+            <div class="skill-cat">Programming</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">C / C++</span>
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">Verilog</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--amber)">
+          <div class="skill-card-head">
+            <div class="skill-icon">⬛</div>
+            <div class="skill-cat">Embedded Systems</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">RISC-V Arch</span>
+            <span class="skill-tag">UART / I2C / SPI</span>
+            <span class="skill-tag">Digital Logic</span>
+            <span class="skill-tag">Microcontrollers</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--green)">
+          <div class="skill-card-head">
+            <div class="skill-icon">🔒</div>
+            <div class="skill-cat">Cybersecurity</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Hardware Security</span>
+            <span class="skill-tag">Network Security</span>
+            <span class="skill-tag">Threat Intel</span>
+            <span class="skill-tag">Ethical Hacking</span>
+            <span class="skill-tag">Vuln Assessment</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--cyan)">
+          <div class="skill-card-head">
+            <div class="skill-icon">⬢</div>
+            <div class="skill-cat">Tools & DevOps</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Kali Linux</span>
+            <span class="skill-tag">GitHub</span>
+            <span class="skill-tag">Blender</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--green)">
+          <div class="skill-card-head">
+            <div class="skill-icon">◎</div>
+            <div class="skill-cat">Languages</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">English (Fluent)</span>
+            <span class="skill-tag">Tamil (Native)</span>
+            <span class="skill-tag">Hindi (Intermediate)</span>
+          </div>
+        </div>
+
+        <div class="skill-card fade-in" style="--accent:var(--amber)">
+          <div class="skill-card-head">
+            <div class="skill-icon">⬤</div>
+            <div class="skill-cat">Hardware & SoC</div>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Cache Systems</span>
+            <span class="skill-tag">SoC Verification</span>
+            <span class="skill-tag">HW Debugging</span>
+            <span class="skill-tag">Peripheral Design</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="container">
+      <div class="section-label fade-in">PROCESS LOG</div>
+      <h2 class="section-title fade-in">EXPERIENCE <span class="accent">TIMELINE</span></h2>
+      <div class="timeline">
+
+        <div class="timeline-item fade-in" style="--accent:var(--amber)">
+          <div class="timeline-meta">
+            <div class="timeline-role">Team Lead — Tapeout Project</div>
+            <div class="timeline-org">NVIDIA Mentorship</div>
+            <span class="timeline-date">JULY 2025 → CURRENT</span>
+          </div>
+          <div class="timeline-loc">📍 Chennai</div>
+          <ul class="timeline-desc">
+            <li>Leading a hardware design & verification team for a Cache Memory System under NVIDIA's direct guidance.</li>
+            <li>Applying Digital Logic Design principles and SoC-level verification methodologies.</li>
+            <li>Gaining hands-on exposure to industry-standard hardware verification flows and debugging pipelines.</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item fade-in" style="--accent:var(--cyan)">
+          <div class="timeline-meta">
+            <div class="timeline-role">Intern — RISC-V Processor</div>
+            <div class="timeline-org">IIT Madras / Shakti Project</div>
+            <span class="timeline-date">PAST</span>
+          </div>
+          <div class="timeline-loc">📍 Chennai</div>
+          <ul class="timeline-desc">
+            <li>Specialized in UART Peripheral Verification on the Shakti C-Class RISC-V processor.</li>
+            <li>Validated hardware-software interactions involving interrupts and status registers for embedded drivers.</li>
+            <li>Gained deep understanding of RISC-V ISA and peripheral interfacing protocols.</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item fade-in" style="--accent:var(--green)">
+          <div class="timeline-meta">
+            <div class="timeline-role">B.E. Electronics & Communication</div>
+            <div class="timeline-org">Anna University (CEG)</div>
+            <span class="timeline-date">2023 → 2027</span>
+          </div>
+          <div class="timeline-loc">📍 Chennai — CGPA: 8.1 / 10.0</div>
+          <ul class="timeline-desc">
+            <li>Pursuing B.E. in ECE with a dedicated Minor in Cybersecurity (CSE Dept).</li>
+            <li>Captain of CEG Football Team — SVCE Tournament Winners (2024), 2nd place Zonals 2024.</li>
+            <li>NSS Volunteer — received Best Volunteer Award (2025).</li>
+          </ul>
+        </div>
+
+        <div class="timeline-item fade-in" style="--accent:var(--amber)">
+          <div class="timeline-meta">
+            <div class="timeline-role">Campus Ambassador</div>
+            <div class="timeline-org">SKOLAR EdTech Pvt. Ltd.</div>
+            <span class="timeline-date">2025</span>
+          </div>
+          <div class="timeline-loc">📍 Chennai</div>
+          <ul class="timeline-desc">
+            <li>Represented SKOLAR on campus through brand promotion and student engagement initiatives.</li>
+            <li>Bridged the gap between the EdTech platform and the student community at CEG.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="container">
+      <div class="section-label fade-in">BUILD LOG</div>
+      <h2 class="section-title fade-in">PROJECTS <span class="accent">&amp; RESEARCH</span></h2>
+      <div class="projects-grid">
+
+        <div class="project-card fade-in" style="--accent:var(--amber)">
+          <div class="project-type" style="color:var(--amber)">NVIDIA Mentored</div>
+          <div class="project-title">Cache Memory System — Tapeout</div>
+          <div class="project-desc">Leading end-to-end hardware design and verification of a Cache Memory System. Applying industry-standard SoC verification flows, debugging techniques, and DLD principles under NVIDIA's direct mentorship program.</div>
+          <div class="project-tags">
+            <span class="project-tag">Verilog</span>
+            <span class="project-tag">SoC</span>
+            <span class="project-tag">Cache</span>
+            <span class="project-tag">HW Verification</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--cyan)">
+          <div class="project-type" style="color:var(--cyan)">Academic Project</div>
+          <div class="project-title">Zigbee Communication System Simulation</div>
+          <div class="project-desc">Built a MATLAB simulation model for Zigbee-based wireless communication. Analyzed protocol behaviour and signal integrity to evaluate data transmission reliability for low-power automotive sensor networks.</div>
+          <div class="project-tags">
+            <span class="project-tag">MATLAB</span>
+            <span class="project-tag">Zigbee</span>
+            <span class="project-tag">IoT</span>
+            <span class="project-tag">Signal Analysis</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--green)">
+          <div class="project-type" style="color:var(--green)">Self-Learning</div>
+          <div class="project-title">Analog &amp; Digital Circuit Simulation</div>
+          <div class="project-desc">Actively exploring LTspice and Cadence for schematic capture and circuit simulation. Running Transient, AC, and DC sweep analyses to verify designs against theoretical specs using industry EDA tools.</div>
+          <div class="project-tags">
+            <span class="project-tag">LTspice</span>
+            <span class="project-tag">Cadence</span>
+            <span class="project-tag">EDA</span>
+            <span class="project-tag">Circuit Design</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--red)">
+          <div class="project-type" style="color:var(--red)">Research Publication</div>
+          <div class="project-title">Hardware Security — Vulnerabilities &amp; Mitigations</div>
+          <div class="project-desc">Authored and published a research paper on hardware-level vulnerabilities and mitigation strategies, bridging the gap between physical circuit design and cybersecurity protocols.</div>
+          <div class="project-tags">
+            <span class="project-tag">Hardware Security</span>
+            <span class="project-tag">Published</span>
+            <span class="project-tag">Research</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--cyan)">
+          <div class="project-type" style="color:var(--cyan)">IIT Madras Internship</div>
+          <div class="project-title">Shakti RISC-V — UART Peripheral Verification</div>
+          <div class="project-desc">Verified UART peripheral protocol compliance on the Shakti C-Class RISC-V processor. Validated interrupt handling, status registers, and hardware-software interactions for embedded driver development.</div>
+          <div class="project-tags">
+            <span class="project-tag">RISC-V</span>
+            <span class="project-tag">UART</span>
+            <span class="project-tag">Embedded</span>
+            <span class="project-tag">C-Class</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--amber)">
+          <div class="project-type" style="color:var(--amber)">Workshop</div>
+          <div class="project-title">Innovative Antenna Design — Ansys HFSS</div>
+          <div class="project-desc">Completed hands-on antenna design and simulation workshop using Ansys HFSS, exploring electromagnetic simulation, radiation pattern analysis, and RF design fundamentals.</div>
+          <div class="project-tags">
+            <span class="project-tag">Ansys HFSS</span>
+            <span class="project-tag">RF Design</span>
+            <span class="project-tag">Antenna</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--cyan)">
+          <div class="project-type" style="color:var(--cyan)">Academic Project</div>
+          <div class="project-title">nRF-based Audio Communication Prototype</div>
+          <div class="project-desc">Translated wireless concepts into a physical prototype — used MATLAB ADPCM simulations for bandwidth optimisation, then built a functional walkie-talkie with ESP32, nRF modules, and a microphone achieving stable low-bandwidth audio up to 100 m range.</div>
+          <div class="project-tags">
+            <span class="project-tag">ESP32</span>
+            <span class="project-tag">nRF Module</span>
+            <span class="project-tag">MATLAB</span>
+            <span class="project-tag">ADPCM</span>
+            <span class="project-tag">Wireless</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--green)">
+          <div class="project-type" style="color:var(--green)">Academic Project</div>
+          <div class="project-title">EV Tracking &amp; Seat Occupancy System</div>
+          <div class="project-desc">Developed a system to track Electric Vehicles and monitor seat occupancy in public transport. Interfaced sensors with microcontrollers for real-time data collection and optimised sensor data processing for accurate tracking and reporting.</div>
+          <div class="project-tags">
+            <span class="project-tag">Microcontrollers</span>
+            <span class="project-tag">Sensors</span>
+            <span class="project-tag">IoT</span>
+            <span class="project-tag">EV / Automotive</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--amber)">
+          <div class="project-type" style="color:var(--amber)">Hardware Project</div>
+          <div class="project-title">Custom Bluetooth Speaker</div>
+          <div class="project-desc">Designed and built a Bluetooth speaker integrating a power amplifier and USB module from scratch. Gained hands-on experience in hardware assembly, analog circuit interfacing, and power management design.</div>
+          <div class="project-tags">
+            <span class="project-tag">Analog Circuits</span>
+            <span class="project-tag">Bluetooth</span>
+            <span class="project-tag">Power Amp</span>
+            <span class="project-tag">Hardware Build</span>
+          </div>
+        </div>
+
+        <div class="project-card fade-in" style="--accent:var(--cyan)">
+          <div class="project-type" style="color:var(--cyan)">Full-Stack App</div>
+          <div class="project-title">General College App</div>
+          <div class="project-desc">Created a college application for managing event schedules and announcements using full-stack logic. Served as a centralised information hub for the campus community.</div>
+          <div class="project-tags">
+            <span class="project-tag">Full-Stack</span>
+            <span class="project-tag">Web Dev</span>
+            <span class="project-tag">Campus App</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTS -->
+  <section id="certs">
+    <div class="container">
+      <div class="section-label fade-in">CREDENTIALS VAULT</div>
+      <h2 class="section-title fade-in">CERTIFICATIONS <span class="accent">&amp; TRAINING</span></h2>
+      <div class="certs-grid">
+        <div class="cert-card fade-in">
+          <div class="cert-icon">⬡</div>
+          <div>
+            <div class="cert-name">Advanced Cybersecurity Program</div>
+            <div class="cert-issuer">IBM × Corizo Edtech</div>
+            <div class="cert-year">CURRENT ENROLLMENT // 2026</div>
+          </div>
+        </div>
+        <div class="cert-card fade-in">
+          <div class="cert-icon">🛡</div>
+          <div>
+            <div class="cert-name">Ethical Hacking — Cybersecurity Fundamentals</div>
+            <div class="cert-issuer">NPTEL</div>
+            <div class="cert-year">2024</div>
+          </div>
+        </div>
+        <div class="cert-card fade-in">
+          <div class="cert-icon">⬢</div>
+          <div>
+            <div class="cert-name">Blockchain Technology — Architecture &amp; Smart Contracts</div>
+            <div class="cert-issuer">NPTEL</div>
+            <div class="cert-year">2025</div>
+          </div>
+        </div>
+        <div class="cert-card fade-in">
+          <div class="cert-icon">📡</div>
+          <div>
+            <div class="cert-name">Innovative Antenna Design using Ansys HFSS</div>
+            <div class="cert-issuer">Workshop Certification</div>
+            <div class="cert-year">2024–2025</div>
+          </div>
+        </div>
+        <div class="cert-card fade-in">
+          <div class="cert-icon">🏆</div>
+          <div>
+            <div class="cert-name">Best Volunteer Award — NSS</div>
+            <div class="cert-issuer">National Service Scheme, CEG</div>
+            <div class="cert-year">2025</div>
+          </div>
+        </div>
+        <div class="cert-card fade-in">
+          <div class="cert-icon">◈</div>
+          <div>
+            <div class="cert-name">Beginner's Guide to GitHub</div>
+            <div class="cert-issuer">Alison — Version Control &amp; Collaboration</div>
+            <div class="cert-year">2025</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="achievements" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container">
+      <div class="section-label fade-in">MISSION LOG</div>
+      <h2 class="section-title fade-in">ACHIEVEMENTS <span class="accent">&amp; WINS</span></h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+
+        <div class="cert-card fade-in" style="border-color:rgba(255,179,0,0.2);">
+          <div class="cert-icon" style="color:var(--amber);">⚡</div>
+          <div>
+            <div class="cert-name">K-Hacks 2025</div>
+            <div class="cert-issuer">Hackathon Participant</div>
+            <div class="cert-year">2025</div>
+          </div>
+        </div>
+
+        <div class="cert-card fade-in" style="border-color:rgba(255,179,0,0.2);">
+          <div class="cert-icon" style="color:var(--amber);">⚡</div>
+          <div>
+            <div class="cert-name">Smart India Hackathon 2024</div>
+            <div class="cert-issuer">National Level — Participant</div>
+            <div class="cert-year">2024</div>
+          </div>
+        </div>
+
+        <div class="cert-card fade-in" style="border-color:rgba(0,255,65,0.2);">
+          <div class="cert-icon" style="color:var(--green);">⚽</div>
+          <div>
+            <div class="cert-name">SVCE Football Tournament</div>
+            <div class="cert-issuer">Winners — CEG Football Team</div>
+            <div class="cert-year">2024</div>
+          </div>
+        </div>
+
+        <div class="cert-card fade-in" style="border-color:rgba(0,229,255,0.2);">
+          <div class="cert-icon" style="color:var(--cyan);">⚽</div>
+          <div>
+            <div class="cert-name">Zonals Football — 2nd Place</div>
+            <div class="cert-issuer">Inter-college Zonals, CEG</div>
+            <div class="cert-year">2024</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-label fade-in">ESTABLISH CONNECTION</div>
+      <h2 class="section-title fade-in">CONTACT <span class="accent">NODE</span></h2>
+
+      <div class="contact-layout">
+        <div class="contact-info fade-in">
+
+          <a class="contact-item" href="mailto:jayaprasathsv05@gmail.com">
+            <span class="contact-icon">✉</span>
+            <div>
+              <div class="contact-item-label">PRIMARY CHANNEL</div>
+              <div class="contact-item-val">jayaprasathsv05@gmail.com</div>
+            </div>
+          </a>
+
+          <a class="contact-item" href="tel:+919600206935">
+            <span class="contact-icon">📱</span>
+            <div>
+              <div class="contact-item-label">MOBILE</div>
+              <div class="contact-item-val">+91 9600206935</div>
+            </div>
+          </a>
+
+          <a class="contact-item" href="https://github.com/JP-05-CB" target="_blank">
+            <span class="contact-icon">◈</span>
+            <div>
+              <div class="contact-item-label">GITHUB</div>
+              <div class="contact-item-val">github.com/JP-05-CB</div>
+            </div>
+          </a>
+
+          <a class="contact-item" href="https://www.linkedin.com/in/jaya-prasath-sv-12pg" target="_blank">
+            <span class="contact-icon">⬡</span>
+            <div>
+              <div class="contact-item-label">LINKEDIN</div>
+              <div class="contact-item-val">jaya-prasath-sv-12pg</div>
+            </div>
+          </a>
+
+          <a class="contact-item" href="mailto:2023105034@student.annauniv.edu">
+            <span class="contact-icon">🎓</span>
+            <div>
+              <div class="contact-item-label">UNIVERSITY MAIL</div>
+              <div class="contact-item-val">2023105034@student.annauniv.edu</div>
+            </div>
+          </a>
+
+        </div>
+
+        <!-- Interactive terminal -->
+        <div class="contact-terminal fade-in">
+          <div class="ct-topbar">
+            <div class="t-dot r"></div><div class="t-dot y"></div><div class="t-dot g"></div>
+            <span class="ct-title">NET_COMM — contact@jsv.sys</span>
+          </div>
+          <div class="ct-body" id="ct-body">
+            <div class="ct-line sys">CYBER_OS v2.5 — Contact Interface</div>
+            <div class="ct-line sys">──────────────────────────────────</div>
+            <div class="ct-line out">Type <span style="color:var(--green)">help</span> for available commands.</div>
+          </div>
+          <div class="ct-input-row">
+            <span class="ct-prompt-sym">$&gt;</span>
+            <input id="ct-input" type="text" placeholder="enter command..." autocomplete="off" spellcheck="false"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">JAYAPRASATH SV // ECE @ CEG</div>
+  <div style="color:var(--text-dim);font-size:9px;letter-spacing:1px;">BUILD: CYBER_OS v2.5 // UPTIME: ACTIVE</div>
+  <div class="footer-right">
+    <a href="https://github.com/JP-05-CB" target="_blank">GITHUB</a>
+    <a href="https://www.linkedin.com/in/jaya-prasath-sv-12pg" target="_blank">LINKEDIN</a>
+    <a href="mailto:jayaprasathsv05@gmail.com">MAIL</a>
+  </div>
+</footer>
+
+<script>
+/* ── BIOS BOOT ── */
+(function(){
+  const lines = [
+    'CYBER_OS BIOS v2.5 — Copyright (C) 2025 JSV Systems',
+    '──────────────────────────────────────────────────────────',
+    'CPU: Cortex-M4 @ 180MHz  |  ARCH: RISC-V RV32IMA',
+    'RAM: 2048 KB SRAM  |  FLASH: 8192 KB',
+    '',
+    'Detecting hardware...',
+    '  [OK] UART Peripheral       : VERIFIED',
+    '  [OK] I2C/SPI Bus           : ONLINE',
+    '  [OK] Zigbee Radio Module   : LINKED',
+    '  [OK] Cache Memory Array    : MAPPED',
+    '  [OK] Security Subsystem    : ARMED',
+    '',
+    'Loading identity module: JAYAPRASATH_SV.bin...',
+    'Verifying digital signature... OK',
+    'Mounting profile filesystem...',
+    '',
+    'POST complete. Starting CYBER_OS...',
+  ];
+  const container = document.getElementById('bios-lines');
+  const bar = document.getElementById('bios-bar-fill');
+  const status = document.getElementById('bios-status');
+
+  let i = 0;
+  function showLine(){
+    if(i >= lines.length){
+      // fill bar
+      let w = 0;
+      const fill = setInterval(() => {
+        w += 2;
+        bar.style.width = w + '%';
+        status.textContent = 'Loading modules... ' + w + '%';
+        if(w >= 100){
+          clearInterval(fill);
+          status.textContent = 'BOOT COMPLETE — Welcome, Jayaprasath SV';
+          setTimeout(bootDone, 700);
+        }
+      }, 18);
+      return;
+    }
+    const p = document.createElement('p');
+    const txt = lines[i];
+    p.style.animationDelay = '0s';
+    if(txt.startsWith('  [OK]')) p.style.color = '#00ff41';
+    else if(txt.includes('BIOS')) p.style.color = '#ffb300';
+    else if(txt.startsWith('──')) p.style.color = '#3a4a5a';
+    else if(txt === '') { p.innerHTML = '&nbsp;'; }
+    else p.textContent = txt;
+    container.appendChild(p);
+    i++;
+    setTimeout(showLine, txt === '' ? 40 : 80);
+  }
+  showLine();
+
+  function bootDone(){
+    const bios = document.getElementById('bios');
+    bios.style.transition = 'opacity 0.6s';
+    bios.style.opacity = '0';
+    setTimeout(() => {
+      bios.style.display = 'none';
+      document.getElementById('navbar').style.opacity = '1';
+      startHeroTyping();
+    }, 600);
+  }
+})();
+
+/* ── LIVE CLOCK ── */
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('live-clock').textContent = h+':'+m+':'+s;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ── HERO TYPING ── */
+function startHeroTyping(){
+  const lines = [
+    'B.E. ECE @ Anna University (CEG), CGPA: 8.1/10',
+    'Minor in Cybersecurity (CSE Dept)',
+    'RISC-V Peripheral Verification — IIT Madras Shakti',
+    'Team Lead: NVIDIA Mentorship — Cache Tapeout',
+    'Research Published: Hardware Security',
+    'Interests: Hardware Security · IoT Vulns · Net Protocols',
+  ];
+  const el = document.getElementById('typing-output');
+  let lineIdx = 0, charIdx = 0, deleting = false, pauseTick = 0;
+
+  function tick(){
+    const cur = lines[lineIdx];
+    if(!deleting){
+      charIdx++;
+      el.textContent = '> ' + cur.slice(0, charIdx);
+      if(charIdx >= cur.length){
+        pauseTick = 40;
+        deleting = true;
+      }
+      setTimeout(tick, 38);
+    } else {
+      if(pauseTick > 0){ pauseTick--; setTimeout(tick, 18); return; }
+      charIdx--;
+      el.textContent = '> ' + cur.slice(0, charIdx);
+      if(charIdx <= 0){
+        deleting = false;
+        lineIdx = (lineIdx + 1) % lines.length;
+      }
+      setTimeout(tick, 22);
+    }
+  }
+  tick();
+}
+
+/* ── CONTACT TERMINAL ── */
+(function(){
+  const body = document.getElementById('ct-body');
+  const input = document.getElementById('ct-input');
+
+  const commands = {
+    help: () => [
+      {c:'sys', t:'Available commands:'},
+      {c:'out', t:'  whoami     — identity report'},
+      {c:'out', t:'  skills     — list technical skills'},
+      {c:'out', t:'  contact    — display contact info'},
+      {c:'out', t:'  github     — open GitHub profile'},
+      {c:'out', t:'  linkedin   — open LinkedIn'},
+      {c:'out', t:'  status     — system status'},
+      {c:'out', t:'  clear      — clear terminal'},
+    ],
+    whoami: () => [
+      {c:'sys', t:'── IDENTITY REPORT ──────────────────'},
+      {c:'out', t:'Name    : Jayaprasath SV'},
+      {c:'out', t:'Role    : ECE Undergrad + Cybersecurity Minor'},
+      {c:'out', t:'College : Anna University (CEG), Chennai'},
+      {c:'out', t:'CGPA    : 8.1 / 10.0'},
+      {c:'out', t:'Focus   : Hardware Security, RISC-V, IoT'},
+      {c:'info', t:'Status  : ONLINE & SEEKING OPPORTUNITIES'},
+    ],
+    skills: () => [
+      {c:'sys', t:'── SKILL MODULES ────────────────────'},
+      {c:'out', t:'[LANG]   C / C++ / Python / Verilog'},
+      {c:'out', t:'[EDA]    MATLAB · LTspice · Cadence · HFSS'},
+      {c:'out', t:'[HW]     RISC-V · UART/I2C/SPI · Cache SoC'},
+      {c:'out', t:'[SEC]    Ethical Hacking · Network Security'},
+      {c:'out', t:'[TOOLS]  Kali Linux · GitHub'},
+    ],
+    contact: () => [
+      {c:'sys', t:'── CONTACT CHANNELS ─────────────────'},
+      {c:'out', t:'Email  : jayaprasathsv05@gmail.com'},
+      {c:'out', t:'Mobile : +91 9600206935'},
+      {c:'out', t:'GitHub : github.com/JP-05-CB'},
+      {c:'out', t:'LinkedIn: linkedin.com/in/jaya-prasath-sv-12pg'},
+    ],
+    github: () => {
+      window.open('https://github.com/JP-05-CB','_blank');
+      return [{c:'info', t:'Opening github.com/JP-05-CB...'}];
+    },
+    linkedin: () => {
+      window.open('https://www.linkedin.com/in/jaya-prasath-sv-12pg','_blank');
+      return [{c:'info', t:'Opening LinkedIn profile...'}];
+    },
+    status: () => [
+      {c:'sys',  t:'── SYSTEM STATUS ────────────────────'},
+      {c:'out',  t:'CYBER_OS    v2.5    [RUNNING]'},
+      {c:'out',  t:'NVIDIA Tapeout      [ACTIVE]'},
+      {c:'out',  t:'IBM Cyber Program   [ENROLLED]'},
+      {c:'info', t:'Availability        [OPEN TO ROLES]'},
+    ],
+    clear: () => { body.innerHTML = ''; return []; },
+  };
+
+  function addLine(cls, text){
+    const d = document.createElement('div');
+    d.className = 'ct-line ' + cls;
+    d.textContent = text;
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if(e.key !== 'Enter') return;
+    const cmd = input.value.trim().toLowerCase();
+    input.value = '';
+    addLine('sys', '$ ' + cmd);
+    if(!cmd) return;
+    const fn = commands[cmd];
+    if(fn){
+      const out = fn();
+      out.forEach(o => addLine(o.c, o.t));
+    } else {
+      addLine('err', 'command not found: ' + cmd + '. Type "help".');
+    }
+    body.scrollTop = body.scrollHeight;
+  });
+})();
+
+/* ── SCROLL FADE-IN ── */
+(function(){
+  const els = document.querySelectorAll('.fade-in');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if(entry.isIntersecting){
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>
