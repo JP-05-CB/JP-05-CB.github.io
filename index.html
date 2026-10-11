@@ -782,7 +782,7 @@
     <!-- Floating hex addresses -->
     <div class="hex-float" style="top:18%;left:5%;animation-delay:0s;">0x4A61796170726173617468</div>
     <div class="hex-float" style="top:40%;right:8%;animation-delay:3s;">0xRISCV_UART_PERIPH</div>
-    <div class="hex-float" style="top:70%;left:10%;animation-delay:6s;">0xZIGBEE_PROTO_STACK</div>
+    <div class="hex-float" style="top:70%;left:10%;animation-delay:6s;">0xNRF_RF_LINK_UP</div>
     <div class="hex-float" style="top:25%;right:22%;animation-delay:9s;">0xCACHE_VERIFY_PASS</div>
 
     <div class="hero-inner">
@@ -869,6 +869,8 @@
           <div class="skill-tags">
             <span class="skill-tag">Hardware Security</span>
             <span class="skill-tag">Network Security</span>
+            <span class="skill-tag">eBPF / XDP</span>
+            <span class="skill-tag">Scapy</span>
             <span class="skill-tag">Threat Intel</span>
             <span class="skill-tag">Ethical Hacking</span>
             <span class="skill-tag">Vuln Assessment</span>
@@ -989,6 +991,19 @@
       <h2 class="section-title fade-in">PROJECTS <span class="accent">&amp; RESEARCH</span></h2>
       <div class="projects-grid">
 
+        <div class="project-card fade-in" style="--accent:var(--green)">
+          <div class="project-type" style="color:var(--green)">Final Year Project</div>
+          <div class="project-title">Autonomous AI Cyber Commander</div>
+          <div class="project-desc">Closed-loop network defence system that monitors traffic with Scapy, flags anomalies such as abnormal TCP SYN rates using threshold-based detection, and responds automatically. A Python controller updates an eBPF/XDP firewall's BPF hash-map blocklist at runtime (block / unblock / list / stats). Validated on an isolated two-VM lab with a Kali attacker and a protected host.</div>
+          <div class="project-tags">
+            <span class="project-tag">eBPF / XDP</span>
+            <span class="project-tag">Python</span>
+            <span class="project-tag">Scapy</span>
+            <span class="project-tag">Network Security</span>
+            <span class="project-tag">Kali Linux</span>
+          </div>
+        </div>
+
         <div class="project-card fade-in" style="--accent:var(--amber)">
           <div class="project-type" style="color:var(--amber)">NVIDIA Mentored</div>
           <div class="project-title">Cache Memory System — Tapeout</div>
@@ -1003,11 +1018,11 @@
 
         <div class="project-card fade-in" style="--accent:var(--cyan)">
           <div class="project-type" style="color:var(--cyan)">Academic Project</div>
-          <div class="project-title">Zigbee Communication System Simulation</div>
-          <div class="project-desc">Built a MATLAB simulation model for Zigbee-based wireless communication. Analyzed protocol behaviour and signal integrity to evaluate data transmission reliability for low-power automotive sensor networks.</div>
+          <div class="project-title">nRF-Based Wireless Communication Simulation</div>
+          <div class="project-desc">Built a MATLAB simulation model for nRF-based wireless communication. Analyzed link behaviour and signal integrity to evaluate data transmission reliability for low-power automotive sensor networks.</div>
           <div class="project-tags">
             <span class="project-tag">MATLAB</span>
-            <span class="project-tag">Zigbee</span>
+            <span class="project-tag">nRF</span>
             <span class="project-tag">IoT</span>
             <span class="project-tag">Signal Analysis</span>
           </div>
@@ -1312,7 +1327,7 @@
     'Detecting hardware...',
     '  [OK] UART Peripheral       : VERIFIED',
     '  [OK] I2C/SPI Bus           : ONLINE',
-    '  [OK] Zigbee Radio Module   : LINKED',
+    '  [OK] nRF Radio Module      : LINKED',
     '  [OK] Cache Memory Array    : MAPPED',
     '  [OK] Security Subsystem    : ARMED',
     '',
@@ -1385,6 +1400,7 @@ function startHeroTyping(){
   const lines = [
     'B.E. ECE @ Anna University (CEG), CGPA: 8.1/10',
     'Minor in Cybersecurity (CSE Dept)',
+    'Final Year Project: Autonomous AI Cyber Commander (eBPF/XDP)',
     'RISC-V Peripheral Verification — IIT Madras Shakti',
     'Team Lead: NVIDIA Mentorship — Cache Tapeout',
     'Research Published: Hardware Security',
@@ -1447,7 +1463,7 @@ function startHeroTyping(){
       {c:'out', t:'[LANG]   C / C++ / Python / Verilog'},
       {c:'out', t:'[EDA]    MATLAB · LTspice · Cadence · HFSS'},
       {c:'out', t:'[HW]     RISC-V · UART/I2C/SPI · Cache SoC'},
-      {c:'out', t:'[SEC]    Ethical Hacking · Network Security'},
+      {c:'out', t:'[SEC]    Ethical Hacking · Network Security · eBPF/XDP'},
       {c:'out', t:'[TOOLS]  Kali Linux · GitHub'},
     ],
     contact: () => [
